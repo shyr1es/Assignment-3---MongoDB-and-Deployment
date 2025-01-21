@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CRUD Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        .blog {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blog Management</h1>
+
+    <h2>Create Blog</h2>
+    <form id="createBlogForm">
+        <label>Title:</label><br>
+        <input type="text" id="title" required><br><br>
+        <label>Body:</label><br>
+        <textarea id="body" required></textarea><br><br>
+        <label>Author:</label><br>
+        <input type="text" id="author"><br><br>
+        <button type="submit">Create Blog</button>
+    </form>
+
+    <h2>All Blogs</h2>
+    <div id="blogs"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/blogs';
+
+        async function fetchBlogs() {
+            const response = await fetch(API_URL);
+            const blogs = await response.json();
+
+            const blogsDiv = document.getElementById('blogs');
+            blogsDiv.innerHTML = ''; // Clear previous blogs
+            blogs.forEach(blog => {
+                const blogDiv = document.createElement('div');
+                blogDiv.classList.add('blog');
+                blogDiv.innerHTML = `
+                    <h3>${blog.title}</h3>
+                    <p>${blog.body}</p>
+                    <p><strong>Author:</strong> ${blog.author}</p>
+                    <button onclick="deleteBlog('${blog._id}')">Delete</button>
+                `;
+                blogsDiv.appendChild(blogDiv);
+            });
+        }
+
+        document.getElementById('createBlogForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const body = document.getElementById('body').value;
+            const author = document.getElementById('author').value;
+
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, body, author })
+            });
+
+            document.getElementById('createBlogForm').reset();
+            fetchBlogs();
+        });
+
+        async function deleteBlog(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchBlogs();
+        }
+
+        fetchBlogs();
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@ exports.createBlog = async (req, res) => {
     try {
         const { title, body, author } = req.body;
         if (!title || !body) {
-            return res.status(400).json({ message: 'Title and body are required' });
+            return res.status(400).json({ message: 'Title and body are required' }); //400 is error when user input is wrong
         }
 
         const newBlog = new Blog({ title, body, author });
@@ -20,7 +20,7 @@ exports.createBlog = async (req, res) => {
 exports.getAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.find();
-        res.status(200).json(blogs);
+        res.status(200).json(blogs); //200 is success
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
@@ -35,7 +35,7 @@ exports.getBlogById = async (req, res) => {
         }
         res.status(200).json(blog);
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+        res.status(500).json({ message: 'Server error', error: err.message }); //500 is wrong on server sideS
     }
 };
 
