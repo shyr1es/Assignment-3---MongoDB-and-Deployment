@@ -39,13 +39,15 @@
     <script>
         const API_URL = 'http://localhost:5000/api/blogs';
 
+        //func for fetching blogs
         async function fetchBlogs() {
             const response = await fetch(API_URL);
             const blogs = await response.json();
 
-            const blogsDiv = document.getElementById('blogs');
-            blogsDiv.innerHTML = ''; // Clear previous blogs
-            blogs.forEach(blog => {
+            const blogsDiv = document.getElementById('blogs'); // container for blogs
+            blogsDiv.innerHTML = ''; // clear the container
+
+            blogs.forEach(blog => { 
                 const blogDiv = document.createElement('div');
                 blogDiv.classList.add('blog');
                 blogDiv.innerHTML = `
@@ -53,32 +55,73 @@
                     <p>${blog.body}</p>
                     <p><strong>Author:</strong> ${blog.author}</p>
                     <button onclick="deleteBlog('${blog._id}')">Delete</button>
+                    <button onclick="editBlog('${blog._id}', '${blog.title}', '${blog.body}', '${blog.author}')">Edit</button>
                 `;
                 blogsDiv.appendChild(blogDiv);
             });
         }
 
+        // the form submission event listener
         document.getElementById('createBlogForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
+            event.preventDefault(); // Останавливаем перезагрузку страницы
+
             const title = document.getElementById('title').value;
             const body = document.getElementById('body').value;
             const author = document.getElementById('author').value;
+            const blogId = document.getElementById('blogId')?.value; // check if blogId exists
 
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, body, author })
-            });
+            if (blogId) {
+                //if id exists, send PUT request to update the blog
+                await fetch(`${API_URL}/${blogId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, author })
+                });
+            } else {
+                // if not, send POST request to create a new blog
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, author })
+                });
+            }
 
             document.getElementById('createBlogForm').reset();
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Create Blog'; // return button
+            document.getElementById('blogId')?.remove(); // remvove blogId input field
             fetchBlogs();
         });
 
+        // DELETE
         async function deleteBlog(id) {
             await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            fetchBlogs();
+            fetchBlogs(); 
         }
 
+        // Function for edit 
+        function editBlog(id, currentTitle, currentBody, currentAuthor) {
+            document.getElementById('title').value = currentTitle;
+            document.getElementById('body').value = currentBody;
+            document.getElementById('author').value = currentAuthor;
+
+            // add hidden input field for blogId
+            const form = document.getElementById('createBlogForm');
+            let hiddenInput = document.getElementById('blogId');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.id = 'blogId';
+                form.appendChild(hiddenInput);
+            }
+            hiddenInput.value = id;
+
+            // change button text - Update Blog
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Update Blog';
+        }
+
+        //update blogs
         fetchBlogs();
     </script>
 </body>
